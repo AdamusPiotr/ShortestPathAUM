@@ -13,8 +13,8 @@ function greedy(endX, endY) {
   let cost = 0;
 
   while (currentX !== endX || currentY !== endY) {
-    const canGoTop = currentY < 4;
-    const canGoRight = currentX < 4;
+    const canGoTop = currentY < 4 && currentY < endY;
+    const canGoRight = currentX < 4 && currentX < endX;
     points.push({ currentX, currentY });
 
     if (canGoTop && canGoRight) {
@@ -39,48 +39,56 @@ function greedy(endX, endY) {
     if (canGoTop) {
       cost += arr[currentY][currentX][0];
       currentY += 1;
-
-      continue;
     }
   }
 
-  console.log("cost", cost);
-  console.log("path", points);
+  //Last final point
+  points.push({ currentX, currentY });
+
+  return {
+    cost,
+    points
+  };
 }
 
-const smallestPaths = [[], [], [], []];
+const shortestPaths = [[], [], [], [], []];
 
 function dynamicProgramming(endX, endY) {
-  console.log("endX", "endY", endX, endY);
   if (endX === 0 && endY === 0) {
-    //We have to have some staring point
-    smallestPaths[0][0] = 0;
-    return 0;
+    const shortestPathDetails = { cost: 0, path: [{ x: 0, y: 0 }] };
+    shortestPaths[0][0] = shortestPathDetails;
+
+    return shortestPathDetails;
   }
 
-  if (smallestPaths[endY][endX] != null) {
-    //return previously CalculatedValue
-    console.log('We have this calculated previously')
-    return smallestPaths[endY][endX];
+  if (shortestPaths[endY][endX] != null) {
+    return shortestPaths[endY][endX];
   }
 
   if (endX === 0) {
-    console.log("we are going here");
     const fromBottomBase = dynamicProgramming(endX, endY - 1);
-    const costFromBottom = fromBottomBase + arr[endY - 1][endX][0];
+    const costFromBottom = fromBottomBase.cost + arr[endY - 1][endX][0];
+    const shortestPathDetails = {
+      cost: costFromBottom,
+      path: [...fromBottomBase.path, { x: endX, y: endY }]
+    };
 
-    smallestPaths[endY][endX] = costFromBottom;
+    shortestPaths[endY][endX] = shortestPathDetails;
 
-    return costFromBottom;
+    return shortestPathDetails;
   }
 
   if (endY === 0) {
     const fromLeftBase = dynamicProgramming(endX - 1, endY);
-    const costFromLeft = fromLeftBase + arr[endY][endX - 1][1];
+    const costFromLeft = fromLeftBase.cost + arr[endY][endX - 1][1];
+    const shortestPathDetails = {
+      cost: costFromLeft,
+      path: [...fromLeftBase.path, { x: endX, y: endY }]
+    };
 
-    smallestPaths[endY][endX] = costFromLeft;
+    shortestPaths[endY][endX] = shortestPathDetails;
 
-    return costFromLeft;
+    return shortestPathDetails;
   }
 
   // Here we have to ways of accomplish this point,
@@ -88,61 +96,40 @@ function dynamicProgramming(endX, endY) {
   const fromLeftBase = dynamicProgramming(endX - 1, endY);
   const fromBottomBase = dynamicProgramming(endX, endY - 1);
 
-  const costFromLeft = fromLeftBase + arr[endY][endX - 1][1];
-  const costFromBottom = fromBottomBase + arr[endY - 1][endX][0];
+  const costFromLeft = fromLeftBase.cost + arr[endY][endX - 1][1];
+  const costFromBottom = fromBottomBase.cost + arr[endY - 1][endX][0];
 
   if (costFromBottom < costFromLeft) {
-    smallestPaths[endY][endX] = costFromBottom;
+    const shortestPathDetails = {
+      cost: costFromBottom,
+      path: [...fromBottomBase.path, { x: endX, y: endY }]
+    };
 
-    return costFromBottom;
+    shortestPaths[endY][endX] = shortestPathDetails;
+
+    return shortestPathDetails;
+
   } else {
-    smallestPaths[endY][endX] = costFromLeft;
+    const shortestPathDetails = {
+      cost: costFromLeft,
+      path: [...fromLeftBase.path, { x: endX, y: endY }]
+    };
 
-    return costFromLeft;
+
+    shortestPaths[endY][endX] = shortestPathDetails;
+
+    return shortestPathDetails;
   }
 }
 
-// function dynamicProgramming(endX, endY) {
-//   for (let row = 0; row < 4; ++row) {
-//     for (let column = 0; column < 4; ++column) {
-//       if (row === 0 && column === 0) {
-//         smallestPaths[0].push(0);
-//         continue;
-//       }
-//
-//       if (row === 0) {
-//         smallestPaths[row].push(
-//           smallestPaths[row][column - 1] + arr[row][column - 1][1]
-//         );
-//         continue;
-//       }
-//
-//       if (column === 0) {
-//         smallestPaths[row].push(
-//           smallestPaths[row - 1][column] + arr[row - 1][column][0]
-//         );
-//         continue;
-//       }
-//
-//       const smallestPathElementFromBottom =
-//         smallestPaths[row - 1][column] + arr[row - 1][column][0];
-//       const smallestPathElementFromLeft =
-//         smallestPaths[row][column - 1] + arr[row][column - 1][1];
-//
-//       smallestPaths[row].push(
-//         Math.min(smallestPathElementFromLeft, smallestPathElementFromBottom)
-//       );
-//     }
-//   }
-//
-//   console.log(smallestPaths);
-// }
+// console.log('greedy', greedy(4, 4));;
+// console.log(greedy(1, 4));;
+// console.log(greedy(3, 3));;
+// console.log(greedy(4, 3));;
+// console.log(greedy(2, 2));;
 
-// greedy(4, 4);
-
-dynamicProgramming(0, 3);
-
-console.log("end of first dynamic programing");
-dynamicProgramming(0, 2);
-
-console.log(smallestPaths);
+// console.log('dynamicProgramming', dynamicProgramming(4, 4));
+// console.log(dynamicProgramming(1, 4));
+// console.log(dynamicProgramming(3,3));
+// console.log(dynamicProgramming(4,3));
+// console.log(dynamicProgramming(2,2));
