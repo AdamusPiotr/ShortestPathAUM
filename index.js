@@ -91,8 +91,6 @@ function dynamicProgramming(endX, endY) {
     return shortestPathDetails;
   }
 
-  // Here we have to ways of accomplish this point,
-  // because we can go from left and from bottom
   const fromLeftBase = dynamicProgramming(endX - 1, endY);
   const fromBottomBase = dynamicProgramming(endX, endY - 1);
 
